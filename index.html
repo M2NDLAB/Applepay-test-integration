@@ -251,20 +251,17 @@
 
 <body>
     <div class="container">
-        <h1>🍎 Apple Pay Token Generator</h1>
+        <h1>Apple Pay Token Generator</h1>
 
         <div class="instructions">
             <h3>📋 Configurazione Necessaria:</h3>
             <ol>
-                <li><strong>Merchant ID registrato:</strong> Devi avere un Merchant ID valido registrato con Apple</li>
-                <li><strong>Certificato SSL:</strong> Il sito deve essere servito via HTTPS</li>
-                <li><strong>Validazione server:</strong> Implementa la validazione merchant lato server</li>
-                <li><strong>Dominio verificato:</strong> Il dominio deve essere verificato con Apple</li>
+                <li><strong>Titolo configurazione</strong> Dettaglio</li>
             </ol>
         </div>
 
         <div class="config-section">
-            <h4>⚙️ Configurazione Apple Pay:</h4>
+            <h4>Configurazione Apple Pay:</h4>
             <div class="input-group">
                 <label for="merchantId">Merchant ID:</label>
                 <input type="text" id="merchantId" value="merchant.uat"
@@ -284,10 +281,10 @@
         <hr class="section-divider">
 
         <div class="merchant-info">
-            <h4>🏪 Configurazione Gestpay:</h4>
+            <h4>Configurazione Gestpay:</h4>
             <div class="input-group">
                 <label for="shopLogin">Shop Login:</label>
-                <input type="text" id="shopLogin" value="GESPAY94071" placeholder="Inserisci lo Shop Login">
+                <input type="text" id="shopLogin" value="GESPAY94071" placeholder="Inserisci lo Shoplogin">
             </div>
             <div class="input-group">
                 <label for="gateway">Gateway:</label>
@@ -301,12 +298,8 @@
                 </select>
             </div>
             <div class="input-group">
-                <label for="currency">Codice Valuta (UIC):</label>
-                <input type="text" id="currency" value="242" placeholder="242 per EUR, 840 per USD">
-            </div>
-            <div class="input-group">
-                <label for="buyerEmail">Email Buyer (Test):</label>
-                <input type="email" id="buyerEmail" value="test@example.com" placeholder="Email per test">
+                <label for="currency">Codice Valuta (Gestpay):</label>
+                <input type="text" id="currency" value="242" placeholder="242 per EUR">
             </div>
         </div>
 
@@ -323,20 +316,18 @@
         <div id="status"></div>
 
         <div id="token-section" style="display: none;">
-            <h3>🎯 Token Apple Pay Generato:</h3>
+            <h3>Token Apple Pay Generato:</h3>
             <div id="token-display" class="token-display"></div>
             <button class="copy-button" onclick="copyToken()">📋 Copia Token</button>
 
-            <h3>📤 Payload completo per Gestpay callPagamS2S:</h3>
+            <h3>Payload completo per Gestpay callPagamS2S:</h3>
             <div id="full-payload" class="token-display"></div>
             <button class="copy-button" onclick="copyFullPayload()">📋 Copia Payload Completo</button>
         </div>
 
         <div class="test-section">
-            <h3>🧪 Sezione Test</h3>
+            <h3>Sezione Test</h3>
             <p>Se Apple Pay non è disponibile o per test di sviluppo:</p>
-            <button class="button-style" onclick="testTokenGeneration()">🧪 Genera Token di Test</button>
-            <button class="button-style" onclick="resetDemo()">🔄 Reset Demo</button>
             <button class="button-style" onclick="validateConfiguration()">🔍 Valida Configurazione</button>
         </div>
     </div>
@@ -348,8 +339,8 @@
         let sessionActive = false;
 
         // Apple Pay configuration
-        const supportedNetworks = ['visa', 'masterCard', 'amex', 'discover'];
-        const merchantCapabilities = ['supports3DS', 'supportsEMV', 'supportsCredit', 'supportsDebit'];
+        const supportedNetworks = ['visa', 'masterCard'];
+        const merchantCapabilities = ['supports3DS'];
 
         // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
@@ -375,8 +366,7 @@
                 shopLogin: document.getElementById('shopLogin').value.trim(),
                 gateway: document.getElementById('gateway').value.trim(),
                 environment: document.getElementById('environment').value,
-                currency: document.getElementById('currency').value.trim(),
-                buyerEmail: document.getElementById('buyerEmail').value.trim()
+                currency: document.getElementById('currency').value.trim()
             };
         }
 
@@ -434,10 +424,6 @@
                 issues.push('Codice valuta deve essere numerico (es. 242 per EUR)');
             }
 
-            if (!gestpayConfig.buyerEmail || !gestpayConfig.buyerEmail.includes('@')) {
-                issues.push('Email buyer non valida');
-            }
-
             if (!window.location.protocol.startsWith('https') && window.location.hostname !== 'localhost') {
                 issues.push('Apple Pay richiede HTTPS in produzione');
             }
@@ -457,7 +443,7 @@
          * Check Apple Pay availability
          */
         function checkApplePayAvailability() {
-            const config = getMerchantConfig();
+            const config = getMerchantConfig(); //prendo dati inseriti nel form
 
             if (!window.ApplePaySession) {
                 showStatus('❌ Apple Pay JS non disponibile. Usa Safari su iOS/macOS.', 'error');
@@ -547,23 +533,23 @@
             session.onvalidatemerchant = function (event) {
                 console.log('Merchant validation requested for:', event.validationURL);
 
-                // In a real implementation, you would call your server endpoint
-                // fetch(config.validationUrl, {
-                //     method: 'POST',
-                //     headers: { 'Content-Type': 'application/json' },
-                //     body: JSON.stringify({
-                //         validationURL: event.validationURL,
-                //         merchantIdentifier: config.merchantId
-                //     })
-                // })
-                // .then(response => response.json())
-                // .then(merchantSession => {
-                //     session.completeMerchantValidation(merchantSession);
-                // })
-                // .catch(error => {
-                //     console.error('Merchant validation failed:', error);
-                //     session.abort();
-                // });
+                 //In a real implementation, you would call your server endpoint
+                 fetch(config.validationUrl, {
+                     method: 'POST',
+                     headers: { 'Content-Type': 'application/json' },
+                     body: JSON.stringify({
+                         validationURL: event.validationURL,
+                         merchantIdentifier: config.merchantId
+                     })
+                 })
+                 .then(response => response.json())
+                 .then(merchantSession => {
+                     session.completeMerchantValidation(merchantSession);
+                 })
+                 .catch(error => {
+                     console.error('Merchant validation failed:', error);
+                     session.abort();
+                 });
 
                 // For demo purposes, show error about server-side validation
                 showStatus('❌ Validazione merchant richiede implementazione server-side.', 'error');
@@ -633,111 +619,12 @@
                     applePayPKPaymentToken: JSON.stringify(payment.token)
                 },
                 buyer: {
-                    name: (payment.billingContact?.givenName || "Test") + " " + (payment.billingContact?.familyName || "User"),
-                    email: gestpayConfig.buyerEmail
+                    name: (payment.billingContact?.givenName || "Test") + " " + (payment.billingContact?.familyName || "User")
                 }
             };
 
             fullPayloadDisplay.textContent = JSON.stringify(fullPayload, null, 2);
             tokenSection.style.display = 'block';
-        }
-
-        /**
-         * Generate test token for demonstration
-         */
-        function testTokenGeneration() {
-            const mockPayment = {
-                token: {
-                    paymentData: {
-                        version: "EC_v1",
-                        data: "MOCK_ENCRYPTED_DATA_FOR_TESTING_" + Date.now(),
-                        signature: "MOCK_SIGNATURE",
-                        header: {
-                            ephemeralPublicKey: "MOCK_PUBLIC_KEY",
-                            publicKeyHash: "MOCK_HASH",
-                            transactionId: "MOCK_TXN_" + Date.now()
-                        }
-                    },
-                    paymentMethod: {
-                        displayName: "Visa 1234",
-                        network: "Visa",
-                        type: "debit"
-                    },
-                    transactionIdentifier: "MOCK_TXN_ID_" + Date.now()
-                },
-                billingContact: {
-                    givenName: "Test",
-                    familyName: "User"
-                }
-            };
-
-            processApplePayToken(mockPayment);
-            showStatus('🧪 Token di test generato con successo!', 'success');
-        }
-
-        /**
-         * Reset demo to initial state
-         */
-        function resetDemo() {
-            applePayToken = null;
-            fullApplePayData = null;
-            sessionActive = false;
-            
-            document.getElementById('token-section').style.display = 'none';
-            document.getElementById('status').innerHTML = '';
-            
-            // Reset configuration to defaults
-            document.getElementById('merchantId').value = 'merchant.uat';
-            document.getElementById('validationUrl').value = '/api/apple-pay/validate-merchant';
-            document.getElementById('amount').value = '10.00';
-            document.getElementById('shopLogin').value = 'GESPAY94071';
-            document.getElementById('gateway').value = 'Gestpay';
-            document.getElementById('environment').value = 'test';
-            document.getElementById('currency').value = '242';
-            document.getElementById('buyerEmail').value = 'test@example.com';
-            
-            showStatus('🔄 Demo resettata alle impostazioni iniziali', 'info');
-            
-            // Re-check Apple Pay availability
-            setTimeout(() => {
-                checkApplePayAvailability();
-            }, 1000);
-        }
-
-        /**
-         * Copy token to clipboard
-         */
-        function copyToken() {
-            if (!applePayToken) {
-                showStatus('❌ Nessun token da copiare', 'error');
-                return;
-            }
-
-            const tokenText = JSON.stringify(applePayToken, null, 2);
-            navigator.clipboard.writeText(tokenText).then(() => {
-                showStatus('✅ Token copiato negli appunti!', 'success');
-            }).catch(err => {
-                console.error('Error copying token:', err);
-                showStatus('❌ Errore nel copiare il token', 'error');
-            });
-        }
-
-        /**
-         * Copy full payload to clipboard
-         */
-        function copyFullPayload() {
-            const fullPayloadElement = document.getElementById('full-payload');
-            if (!fullPayloadElement.textContent) {
-                showStatus('❌ Nessun payload da copiare', 'error');
-                return;
-            }
-
-            navigator.clipboard.writeText(fullPayloadElement.textContent).then(() => {
-                showStatus('✅ Payload completo copiato negli appunti!', 'success');
-            }).catch(err => {
-                console.error('Error copying payload:', err);
-                showStatus('❌ Errore nel copiare il payload', 'error');
-            });
         }
     </script>
 </body>
